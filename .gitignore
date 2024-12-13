@@ -1,0 +1,4 @@
+.venv
+/app/lane_segmentation/dataset
+/app/road_detection/dataset
+/app/road_detection/runs/detect/predict
