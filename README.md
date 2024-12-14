@@ -1,7 +1,7 @@
 # **Self-Drive Car: Computer Vision**
 
 ## **Previews**
-![https://www.linkedin.com/feed/update/urn:li:activity:7273640023046967296/](https://www.linkedin.com/feed/update/urn:li:activity:7273640023046967296/)
+[https://www.linkedin.com/feed/update/urn:li:activity:7273640023046967296/](https://www.linkedin.com/feed/update/urn:li:activity:7273640023046967296/)
 
 ---
 
