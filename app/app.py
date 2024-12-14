@@ -1,11 +1,10 @@
-import os
 import cv2
 import numpy as np
 from keras import metrics
 from keras import models
 from ultralytics import YOLO
 
-video_path = '/Users/princekhunt/Documents/Portfolio/Self-Drive-Car/assets/v5.mp4'
+video_path = '/Users/princekhunt/Documents/Portfolio/Self-Drive-Car/assets/v1.mp4'
 segmentation_model = YOLO("/Users/princekhunt/Documents/Portfolio/Self-Drive-Car/app/lane_segmentation/runs/segment/train/weights/best.pt")
 detection_model = YOLO("/Users/princekhunt/Documents/Portfolio/Self-Drive-Car/app/road_detection/runs/detect/train/weights/best.pt")
 steering_model = models.load_model("/Users/princekhunt/Documents/Portfolio/Self-Drive-Car/app/steering_angle_prediction/best.h5", custom_objects={'mse': metrics.MeanSquaredError()})
@@ -22,18 +21,19 @@ frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 fps = int(cap.get(cv2.CAP_PROP_FPS))
 
 def rotate_steering_wheel(steering_image_path, steering_angle):
-    steering_image = cv2.imread(steering_image_path, cv2.IMREAD_UNCHANGED)  # Includes transparency (RGBA)
+    steering_image = cv2.imread(steering_image_path, cv2.IMREAD_UNCHANGED)  
     (h, w) = steering_image.shape[:2]
     center = (w // 2, h // 2)
-    scaled_angle = -steering_angle * 180
-    rotation_matrix = cv2.getRotationMatrix2D(center, scaled_angle, 1.0)
+    scaled_angle = steering_angle * 180
+    print(f"Steering Angle: {steering_angle}, Scaled Angle: {scaled_angle}")
+    rotation_matrix = cv2.getRotationMatrix2D(center=center, angle=scaled_angle * -1, scale=1.0)
     rotated_image = cv2.warpAffine(steering_image, rotation_matrix, (w, h), flags=cv2.INTER_LINEAR, borderValue=(0, 0, 0, 0))
     rotated_image = cv2.cvtColor(rotated_image, cv2.COLOR_BGRA2BGR)
     
     return rotated_image
 
 frame_count = 0
-frame_skip = 3
+frame_skip = 3 # I have no gpu so i am skipping the frames otherwise here we can set 1 to see all frames
 
 while (True):
     ret, frame = cap.read()
@@ -42,7 +42,7 @@ while (True):
         break  
 
     if frame_count % frame_skip == 0:
-        segmentation_results = segmentation_model.predict(frame, imgsz=(320, 320), conf=0.25, verbose=False)
+        segmentation_results = segmentation_model.predict(frame, imgsz=(320, 320), conf=0.50, verbose=False)
 
         if segmentation_results[0].masks:
             mask = segmentation_results[0].masks.data[0].cpu().numpy() 
@@ -78,7 +78,7 @@ while (True):
         steering_angle = prediction[0][0]
         rotated_steering_wheel = rotate_steering_wheel(steering_image_path, steering_angle)
 
-        cv2.imshow("STEERING WHEEL", rotated_steering_wheel)
+        cv2.imshow("STEERING", rotated_steering_wheel)
         cv2.imshow('VIDEO SEGMENTATION AND DETECTION', blended)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
